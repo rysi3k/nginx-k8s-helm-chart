@@ -1,0 +1,2 @@
+# storage path for static files
+staticFilesPath: "/tmp"

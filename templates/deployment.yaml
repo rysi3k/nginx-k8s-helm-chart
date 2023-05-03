@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-http-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-server
+  template:
+    metadata:
+      labels:
+        app: nginx-server
+    spec:
+      containers:
+        - name: nginx
+          image: "nginx:latest"
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env: []
+          ports:
+            - name: http
+              containerPort: 80
+          volumeMounts:
+            - name: statics
+              mountPath: /var/www/html
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d/
+            - name: nginx-basic-auth
+              mountPath: /etc/nginx/.htpasswd
+              subPath: BASIC_AUTH_STRING
+              readOnly: true
+      volumes:
+        - name: statics
+          hostPath:
+            path: {{ .Values.staticFilesPath | quote }}
+            type: Directory
+        - name: nginx-config
+          configMap:
+            name: nginx-cm
+        - name: nginx-basic-auth
+          secret:
+            secretName: nginx-basic-auth-secret
